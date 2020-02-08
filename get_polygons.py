@@ -2,6 +2,7 @@
 """
 Program to get the vectors and export to csv the localitys of Bogotá 
 """
+from time import time
 import requests
 import json
 import csv
@@ -21,32 +22,30 @@ localitys = ["Usaquén", "Santa Fe", "San Cristobal", "Usme",
                 "Ciudad Bolívar", "Sumapaz"]
 fields = "+bogota+colombia&polygon_geojson=1& format=json"
 vectors = []
-"for local in localitys:"
-try:
-    req = requests.get("{}{}{}".format(url, localitys[0],fields))
-    for x in req.json():
-        if x.get('geojson').get('type') == 'Polygon' and x.get('type') == 'administrative':
-            for coor in x.get('geojson').get('coordinates')[0]:
-                vectors.append({'localidad': localitys[0], 'latitud': coor[1], 'longitud': coor[0]})
+start = time()
+print(start)
+for local in localitys:
+    try:
+        req = requests.get("{}{}{}".format(url, local, fields))
+        for x in req.json():
+            if x.get('geojson').get('type') == 'Polygon' and x.get('type') == 'administrative':
+                for coor in x.get('geojson').get('coordinates')[0]:
+                    vectors.append({'localidad': local, 'latitud': coor[1], 'longitud': coor[0]})
 
-    with open('1.csv', 'w') as csvfile:
-        fieldnames = ['localidad', 'latitud', 'longitud']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(vectors)
-
-
-except requests.exceptions.Timeout:
-    print("Timeout")
-except requests.exceptions.TooManyRedirects:
-    print("URL is bad, try a different one")
-except requests.exceptions.RequestException as e:
-    print("Requests Error: ")
-    print(e)
-    sys.exit(1)
+        with open('polygons.csv', 'w') as csvfile:
+            fieldnames = ['localidad', 'latitud', 'longitud']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(vectors)
 
 
-
-print(vectors)
-print(type(vectors))
-"        for x in req.json(): vectors.append(x.get('geojson').get('coordinates')) if x.get('geojson').get('type') == 'Polygon' else ''"
+    except requests.exceptions.Timeout:
+        print("Timeout")
+    except requests.exceptions.TooManyRedirects:
+        print("URL is bad, try a different one")
+    except requests.exceptions.RequestException as e:
+        print("Requests Error: ")
+        print(e)
+        sys.exit(1)
+end = time()
+print(end - start)
