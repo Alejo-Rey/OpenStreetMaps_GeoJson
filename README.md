@@ -17,7 +17,7 @@ What you should find in this project:
   - requests
   - json
   - csv
-  - sys
+  - sys\
   Do a request for the API of OpenStreetMap with some params to get a JSON and then get the polygon\
   of this request. Then is storage in a csv file.\
   to run it:\
@@ -28,7 +28,7 @@ What you should find in this project:
 * This program read some csv files and create the polygons of sympy and find the points in this, use:\
   - sympy
   - time
-  - csv
+  - csv\
   Sympy is necesary to install.\
     `sudo pip3 install sympy`
   Read the polygons and the points file, whit polygons create a the polygons with Sympy,\
@@ -37,6 +37,4 @@ What you should find in this project:
   `./find_localitys.py`
 
 ## Author
-* **Alejo-Rey** - [Alejo-Rey](https://github.com/Alejo-Rey)# OpenStreetMaps_GeoJson
-OpenStreetMaps_GeoJson
-# OpenStreetMaps_GeoJson
+* **Alejo-Rey** - [Alejo-Rey](https://github.com/Alejo-Rey)
