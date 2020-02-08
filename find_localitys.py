@@ -50,10 +50,12 @@ if __name__ == '__main__':
 
     for point in points:
         for key, value in polygons.items():
-            print(key)
             try:
                 if value.encloses_point(Point(float(point.get('latitud')), float(point.get('longitud')))):
                     point['localidad'] = key
+                    time_point = time()
+                    print("{}: {}s locality: {}".format(point.get('id'), time_point-start, key))
+                    pass
             except:
                 print("invalid Coordinate", point.get('latitud'), point.get('longitud'))
     try:
@@ -66,4 +68,4 @@ if __name__ == '__main__':
         print("invalid field")
 
     end = time()
-    print("time to find the points: ", end - time_poly - start)
+    print("time to find the points: ", end - start)
