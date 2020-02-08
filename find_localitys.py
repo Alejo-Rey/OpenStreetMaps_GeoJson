@@ -1,52 +1,69 @@
 #!/usr/bin/python3
 """
-Program to get the vectors and export to csv the localitys of Bogotá 
+Program to find the localitys of a point in Bogotá 
 """
-import requests
-import json
+from sympy import Polygon, Point
+from sympy.abc import t
+from time import time
 import csv
-import sys
 
-"""
-def vectors():
-        cd get and export the vectors
-"""
+start = time()
+def open_file(file):
+    """
+        Returns a list of the dictionarys
+        results: the list to fill
+    """
+    results = []
+    with open(file) as File:
+        reader = csv.DictReader(File)
+        for row in reader:
+            results.append(row)
+    return results
 
-url = "https://nominatim.openstreetmap.org/search.php?q="
-localitys = ["Usaquén", "Santa Fe", "San Cristobal", "Usme",
-                "Tunjuelito", "Bosa", "Kennedy", "Fontibón", 
-                "Engativá", "Suba", "Chapinero", "Barrios Unidos",
-                "Teusaquillo","Los Mártires", "Antonio Nariño",
-                "Puente Aranda", "La Candelaria", "Rafael Uribe Uribe",
-                "Ciudad Bolívar", "Sumapaz"]
-fields = "+bogota+colombia&polygon_geojson=1& format=json"
-vectors = []
-"for local in localitys: 'localidad',    'localidad': localitys[0], "
-try:
-    req = requests.get("{}{}{}".format(url, localitys[0],fields))
-    for x in req.json():
-        if x.get('geojson').get('type') == 'Polygon' and x.get('type') == 'administrative':
-            for coor in x.get('geojson').get('coordinates')[0]:
-                vectors.append({'latitud': coor[1], 'longitud': coor[0]})
+time_poly = time()
+def pass_coordinates(list_coordinates):
+    """
+        Returns a dictionary of polygons with the coordinates
+    """
 
-    with open('1.csv', 'w') as csvfile:
-        fieldnames = ['latitud', 'longitud']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(vectors)
+    polygons = {}
+    for key, value in list_coordinates.items():
+        polygons[key] = Polygon(*value)
+        time_poly = time()
+        print("Time of create the polygon: ", key, " : ", time_poly - start)
+    return polygons
 
+if __name__ == '__main__':
+    polygons = open_file('polygons.csv')
+    points = open_file('points.csv')
 
-except requests.exceptions.Timeout:
-    print("Timeout")
-except requests.exceptions.TooManyRedirects:
-    print("URL is bad, try a different one")
-except requests.exceptions.RequestException as e:
-    print("Requests Error: ")
-    print(e)
-    sys.exit(1)
+    localities = {}
+    for coor in polygons:
+        if coor.get('localidad') in localities.keys():
+            localities[coor.get('localidad')].append((float(coor.get('latitud')), float(coor.get('longitud'))))
+        else:
+            coordinates = []
+            coordinates.append((float(coor.get('latitud')), float(coor.get('longitud'))))
+            localities[coor.get('localidad')] = coordinates
 
+    polygons = pass_coordinates(localities)
 
+    for point in points:
+        for key, value in polygons.items():
+            print(key)
+            try:
+                if value.encloses_point(Point(float(point.get('latitud')), float(point.get('longitud')))):
+                    point['localidad'] = key
+            except:
+                print("invalid Coordinate", point.get('latitud'), point.get('longitud'))
+    try:
+        with open('points_locality.csv', 'w') as csvfile:
+            fieldnames = ['id', 'latitud', 'longitud', 'localidad']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(points)
+    except:
+        print("invalid field")
 
-print(vectors)
-print(type(vectors))
-"        for x in req.json(): vectors.append(x.get('geojson').get('coordinates')) if x.get('geojson').get('type') == 'Polygon' else ''"
+    end = time()
+    print("time to find the points: ", end - time_poly - start)
